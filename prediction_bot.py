@@ -1,5 +1,5 @@
 """
-Stock Predictor Bot - With Electronic Device Prices
+Stock Predictor Bot - With Electronic Device Prices & GPU Comparison
 """
 
 import logging
@@ -19,10 +19,11 @@ logging.basicConfig(level=logging.INFO)
 # Create folder for charts
 os.makedirs("charts", exist_ok=True)
 
-# Electronic devices database
-# Electronic devices database
+# ============================================
+# ELECTRONIC DEVICES DATABASE
+# ============================================
 ELECTRONIC_DEVICES = {
-    # iPhones (no underscores needed)
+    # iPhones
     'iphone15': {'name': 'iPhone 15', 'price': 799, 'category': 'Smartphone'},
     'iphone15pro': {'name': 'iPhone 15 Pro', 'price': 999, 'category': 'Smartphone'},
     'iphone15promax': {'name': 'iPhone 15 Pro Max', 'price': 1199, 'category': 'Smartphone'},
@@ -34,7 +35,7 @@ ELECTRONIC_DEVICES = {
     'macbookpro14': {'name': 'MacBook Pro 14"', 'price': 1999, 'category': 'Laptop'},
     'macbookpro16': {'name': 'MacBook Pro 16"', 'price': 2499, 'category': 'Laptop'},
 
-    # Graphics Cards (simple names)
+    # Graphics Cards
     'rtx4090': {'name': 'NVIDIA RTX 4090', 'price': 1599, 'category': 'Graphics Card'},
     'rtx4080': {'name': 'NVIDIA RTX 4080', 'price': 1199, 'category': 'Graphics Card'},
     'rtx4070': {'name': 'NVIDIA RTX 4070', 'price': 599, 'category': 'Graphics Card'},
@@ -44,71 +45,130 @@ ELECTRONIC_DEVICES = {
 
     # Gaming Consoles
     'ps5': {'name': 'PlayStation 5', 'price': 499, 'category': 'Gaming Console'},
-    'ps5digital': {'name': 'PlayStation 5 Digital', 'price': 399, 'category': 'Gaming Console'},
     'xboxseriesx': {'name': 'Xbox Series X', 'price': 499, 'category': 'Gaming Console'},
-    'xboxseriess': {'name': 'Xbox Series S', 'price': 299, 'category': 'Gaming Console'},
     'nintendoswitch': {'name': 'Nintendo Switch OLED', 'price': 349, 'category': 'Gaming Console'},
 
     # Processors
     'i913900k': {'name': 'Intel Core i9-13900K', 'price': 589, 'category': 'Processor'},
     'i713700k': {'name': 'Intel Core i7-13700K', 'price': 409, 'category': 'Processor'},
-    'i513600k': {'name': 'Intel Core i5-13600K', 'price': 319, 'category': 'Processor'},
     'ryzen97950x': {'name': 'AMD Ryzen 9 7950X', 'price': 699, 'category': 'Processor'},
-    'ryzen77800x3d': {'name': 'AMD Ryzen 7 7800X3D', 'price': 449, 'category': 'Processor'},
 
-    # RAM
-    'ddr532gb': {'name': 'Corsair Vengeance 32GB DDR5', 'price': 189, 'category': 'RAM'},
-    'ddr416gb': {'name': 'Corsair Vengeance 16GB DDR4', 'price': 89, 'category': 'RAM'},
-
-    # Storage
-    'samsung980pro1tb': {'name': 'Samsung 980 Pro 1TB NVMe', 'price': 89, 'category': 'Storage'},
-    'wdblack2tb': {'name': 'WD Black 2TB SN850X', 'price': 159, 'category': 'Storage'},
-
-    # Other
+    # Accessories
     'airpodspro': {'name': 'AirPods Pro 2', 'price': 249, 'category': 'Accessories'},
     'applewatch': {'name': 'Apple Watch Series 9', 'price': 399, 'category': 'Smartwatch'},
-    'ipadpro': {'name': 'iPad Pro 12.9"', 'price': 1099, 'category': 'Tablet'},
 }
+
+# ============================================
+# GPU DATABASE FOR COMPARISON
+# ============================================
+GPU_DATABASE = {
+    'rtx4090': {
+        'name': 'NVIDIA RTX 4090',
+        'price': 1599,
+        'vram': 24,
+        'performance_score': 100,
+        'best_for': '4K Gaming, Professional Work',
+        'power': 450,
+        'tier': 'Ultra High-End'
+    },
+    'rtx4080': {
+        'name': 'NVIDIA RTX 4080',
+        'price': 1199,
+        'vram': 16,
+        'performance_score': 85,
+        'best_for': '4K Gaming',
+        'power': 320,
+        'tier': 'High-End'
+    },
+    'rtx4070': {
+        'name': 'NVIDIA RTX 4070',
+        'price': 599,
+        'vram': 12,
+        'performance_score': 65,
+        'best_for': '1440p Gaming',
+        'power': 200,
+        'tier': 'Mid-Range'
+    },
+    'rx7900xtx': {
+        'name': 'AMD RX 7900 XTX',
+        'price': 999,
+        'vram': 24,
+        'performance_score': 90,
+        'best_for': '4K Gaming',
+        'power': 355,
+        'tier': 'High-End'
+    },
+    'rx7800xt': {
+        'name': 'AMD RX 7800 XT',
+        'price': 499,
+        'vram': 16,
+        'performance_score': 68,
+        'best_for': '1440p Gaming',
+        'power': 263,
+        'tier': 'Mid-Range'
+    },
+    'rtx3060': {
+        'name': 'NVIDIA RTX 3060',
+        'price': 299,
+        'vram': 12,
+        'performance_score': 45,
+        'best_for': '1080p Gaming',
+        'power': 170,
+        'tier': 'Entry Level'
+    }
+}
+
+# ============================================
+# COMMAND HANDLERS
+# ============================================
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(
         f"Hi {user.first_name}! 📈📱\n\n"
-        f"I can help you with TWO things:\n\n"
+        f"I can help you with:\n\n"
         f"📊 *STOCKS:*\n"
         f"/price AAPL - Get stock price\n"
         f"/predict AAPL - Get 7-day prediction with chart\n\n"
         f"📱 *ELECTRONIC DEVICES:*\n"
         f"/device rtx4090 - Get device price\n"
-        f"/device iphone15pro - Get iPhone price\n"
-        f"/devices - Show all available devices\n\n"
-        f"Try these now:\n"
+        f"/devices - Show all devices\n\n"
+        f"🆚 *GPU COMPARISON:*\n"
+        f"/gpucompare rtx4090 rx7900xtx - Compare GPUs\n\n"
+        f"Try these:\n"
         f"/price AAPL\n"
-        f"/device rtx4090",
+        f"/device rtx4090\n"
+        f"/gpucompare rtx4070 rx7800xt",
         parse_mode='Markdown'
     )
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "📚 *Stock Predictor Bot - Help*\n\n"
-        "*📊 STOCK COMMANDS:*\n"
-        "/price SYMBOL - Get current stock price\n"
-        "/predict SYMBOL - Get 7-day prediction with chart\n\n"
-        "*📱 DEVICE COMMANDS:*\n"
-        "/device NAME - Get electronic device price\n"
-        "/devices - Show all available devices\n"
-        "/categories - Show devices by category\n\n"
+        "📚 *COMPLETE COMMAND LIST*\n\n"
+        "*📊 STOCKS:*\n"
+        "/price SYMBOL - Current stock price\n"
+        "/predict SYMBOL - 7-day prediction with chart\n\n"
+        "*📱 DEVICES:*\n"
+        "/device NAME - Electronic device price\n"
+        "/devices - All available devices\n\n"
+        "*🆚 GPU COMPARISON:*\n"
+        "/gpucompare GPU1 GPU2 - Compare two graphics cards\n\n"
         "*Examples:*\n"
         "/price AAPL\n"
         "/predict TSLA\n"
-        "/device rtx_4090\n"
-        "/device iphone_15_pro\n\n"
+        "/device rtx4090\n"
+        "/gpucompare rtx4090 rx7900xtx\n\n"
         "*Popular Stocks:* AAPL, TSLA, MSFT, NVDA, GOOGL\n"
-        "*Popular Devices:* rtx_4090, iphone_15_pro, ps5, macbook_pro_14",
+        "*Popular Devices:* rtx4090, iphone15pro, ps5\n"
+        "*Popular GPUs:* rtx4090, rtx4070, rx7900xtx, rx7800xt",
         parse_mode='Markdown'
     )
+
+# ============================================
+# STOCK COMMANDS
+# ============================================
 
 
 async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -122,12 +182,13 @@ async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         stock = yf.Ticker(symbol)
-        info = stock.info
-        name = info.get('longName', symbol)
         hist = stock.history(period='1d')
 
         if not hist.empty:
             price = hist['Close'].iloc[-1]
+            info = stock.info
+            name = info.get('longName', symbol)
+
             await update.message.reply_text(
                 f"📊 *{name}* ({symbol})\n\n"
                 f"💰 Price: *${price:.2f}*\n\n"
@@ -141,86 +202,8 @@ async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Error: {symbol} not found")
 
 
-async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Get electronic device price"""
-    if not context.args:
-        # Show quick help
-        devices_list = "\n".join(
-            [f"• {d}" for d in list(ELECTRONIC_DEVICES.keys())[:10]])
-        await update.message.reply_text(
-            f"📱 *Available Devices:*\n{devices_list}\n\n"
-            f"Use /devices to see all\n"
-            f"Example: /device rtx_4090",
-            parse_mode='Markdown'
-        )
-        return
-
-    device_name = context.args[0].lower()
-
-    if device_name in ELECTRONIC_DEVICES:
-        device = ELECTRONIC_DEVICES[device_name]
-        await update.message.reply_text(
-            f"📱 *{device['name']}*\n\n"
-            f"💰 Price: *${device['price']}*\n"
-            f"📂 Category: *{device['category']}*\n\n"
-            f"Find it at: Amazon, Best Buy, etc.",
-            parse_mode='Markdown'
-        )
-    else:
-        # Suggest similar devices
-        suggestions = [d for d in ELECTRONIC_DEVICES.keys()
-                       if device_name in d]
-        if suggestions:
-            await update.message.reply_text(
-                f"❌ Device '{device_name}' not found.\n\n"
-                f"Did you mean:\n" +
-                "\n".join([f"• /device {s}" for s in suggestions[:5]])
-            )
-        else:
-            await update.message.reply_text(
-                f"❌ Device '{device_name}' not found.\n\n"
-                f"Use /devices to see all available devices."
-            )
-
-
-async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show all available electronic devices"""
-    message = "📱 *ALL ELECTRONIC DEVICES*\n\n"
-
-    # Group by category
-    categories = {}
-    for key, device in ELECTRONIC_DEVICES.items():
-        cat = device['category']
-        if cat not in categories:
-            categories[cat] = []
-        categories[cat].append((key, device['name'], device['price']))
-
-    for category, devices in categories.items():
-        message += f"*{category}:*\n"
-        for key, name, price in devices:
-            message += f"• {name} - ${price}\n"
-        message += "\n"
-
-    message += "Use: /device NAME\nExample: /device rtx_4090"
-
-    await update.message.reply_text(message, parse_mode='Markdown')
-
-
-async def categories_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Show devices by category"""
-    message = "📂 *DEVICE CATEGORIES*\n\n"
-
-    categories = set(device['category']
-                     for device in ELECTRONIC_DEVICES.values())
-    for cat in sorted(categories):
-        message += f"• {cat}\n"
-
-    message += "\nUse /devices to see all devices in each category"
-    await update.message.reply_text(message, parse_mode='Markdown')
-
-
 def predict_stock_price(symbol, days=7):
-    """Predict stock price for next days"""
+    """Predict stock price using linear regression"""
     try:
         stock = yf.Ticker(symbol)
         hist = stock.history(period='3mo')
@@ -322,34 +305,190 @@ async def predict_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Error: {e}")
         await update.message.reply_text("❌ Error generating prediction. Please try again.")
 
+# ============================================
+# DEVICE COMMANDS
+# ============================================
+
+
+async def device_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get electronic device price"""
+    if not context.args:
+        devices_list = "\n".join(
+            [f"• {d}" for d in list(ELECTRONIC_DEVICES.keys())[:10]])
+        await update.message.reply_text(
+            f"📱 *Available Devices:*\n{devices_list}\n\n"
+            f"Use /devices to see all\n"
+            f"Example: /device rtx4090",
+            parse_mode='Markdown'
+        )
+        return
+
+    device_name = context.args[0].lower()
+
+    if device_name in ELECTRONIC_DEVICES:
+        device = ELECTRONIC_DEVICES[device_name]
+        await update.message.reply_text(
+            f"📱 *{device['name']}*\n\n"
+            f"💰 Price: *${device['price']}*\n"
+            f"📂 Category: *{device['category']}*\n\n"
+            f"Find it at: Amazon, Best Buy, etc.",
+            parse_mode='Markdown'
+        )
+    else:
+        suggestions = [d for d in ELECTRONIC_DEVICES.keys()
+                       if device_name in d]
+        if suggestions:
+            await update.message.reply_text(
+                f"❌ Device '{device_name}' not found.\n\n"
+                f"Did you mean:\n" +
+                "\n".join([f"• /device {s}" for s in suggestions[:5]])
+            )
+        else:
+            await update.message.reply_text(
+                f"❌ Device '{device_name}' not found.\n\n"
+                f"Use /devices to see all available devices."
+            )
+
+
+async def devices_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show all available electronic devices"""
+    message = "📱 *ALL ELECTRONIC DEVICES*\n\n"
+
+    categories = {}
+    for key, device in ELECTRONIC_DEVICES.items():
+        cat = device['category']
+        if cat not in categories:
+            categories[cat] = []
+        categories[cat].append((device['name'], device['price']))
+
+    for category, devices in categories.items():
+        message += f"*{category}:*\n"
+        for name, price in devices:
+            message += f"• {name} - ${price}\n"
+        message += "\n"
+
+    message += "Use: /device NAME\nExample: /device rtx4090"
+
+    await update.message.reply_text(message, parse_mode='Markdown')
+
+# ============================================
+# GPU COMPARE COMMAND
+# ============================================
+
+
+async def gpu_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Compare two graphics cards"""
+
+    if len(context.args) < 2:
+        await update.message.reply_text(
+            "📊 *GPU Comparison Tool*\n\n"
+            "Compare two graphics cards:\n"
+            "/gpucompare GPU1 GPU2\n\n"
+            "*Examples:*\n"
+            "/gpucompare rtx4090 rx7900xtx\n"
+            "/gpucompare rtx4070 rx7800xt\n\n"
+            "*Available GPUs:*\n"
+            "rtx4090, rtx4080, rtx4070\n"
+            "rx7900xtx, rx7800xt\n"
+            "rtx3060",
+            parse_mode='Markdown'
+        )
+        return
+
+    gpu1 = context.args[0].lower()
+    gpu2 = context.args[1].lower()
+
+    if gpu1 not in GPU_DATABASE:
+        await update.message.reply_text(f"❌ GPU '{gpu1}' not found")
+        return
+
+    if gpu2 not in GPU_DATABASE:
+        await update.message.reply_text(f"❌ GPU '{gpu2}' not found")
+        return
+
+    g1 = GPU_DATABASE[gpu1]
+    g2 = GPU_DATABASE[gpu2]
+
+    perf_diff = g1['performance_score'] - g2['performance_score']
+    price_diff = g1['price'] - g2['price']
+
+    if g1['performance_score'] > g2['performance_score']:
+        winner = f"🏆 WINNER: {g1['name']} (+{perf_diff}% performance)"
+    elif g2['performance_score'] > g1['performance_score']:
+        winner = f"🏆 WINNER: {g2['name']} (+{-perf_diff}% performance)"
+    else:
+        winner = "🤝 TIED in performance!"
+
+    g1_value = g1['performance_score'] / (g1['price'] / 100)
+    g2_value = g2['performance_score'] / (g2['price'] / 100)
+
+    message = f"""
+🆚 *GPU COMPARISON*
+
+*{g1['name']}* vs *{g2['name']}*
+
+━━━━━━━━━━━━━━━━━━━━━━
+📊 *SPECIFICATIONS*
+━━━━━━━━━━━━━━━━━━━━━━
+💰 Price: ${g1['price']} vs ${g2['price']}
+🎮 VRAM: {g1['vram']}GB vs {g2['vram']}GB
+⚡ Power: {g1['power']}W vs {g2['power']}W
+📈 Score: {g1['performance_score']}/100 vs {g2['performance_score']}/100
+🎯 Tier: {g1['tier']} vs {g2['tier']}
+
+━━━━━━━━━━━━━━━━━━━━━━
+📈 *PERFORMANCE*
+━━━━━━━━━━━━━━━━━━━━━━
+• Performance diff: {perf_diff:+d}%
+• Price diff: ${price_diff:+d}
+• Value score: {g1_value:.1f} vs {g2_value:.1f}
+• {winner}
+
+━━━━━━━━━━━━━━━━━━━━━━
+💡 *RECOMMENDATION*
+━━━━━━━━━━━━━━━━━━━━━━
+• Best for gaming: {'✅ ' + g1['name'] if g1['performance_score'] > g2['performance_score'] else '✅ ' + g2['name']}
+• Best value: {'✅ ' + g1['name'] if g1_value > g2_value else '✅ ' + g2['name']}
+
+🎯 *{g1['best_for']}*
+🎯 *{g2['best_for']}*
+    """
+
+    await update.message.reply_text(message, parse_mode='Markdown')
+
+# ============================================
+# MAIN FUNCTION
+# ============================================
+
 
 def main():
     app = Application.builder().token(TOKEN).build()
 
-    # Stock commands
+    # Register all command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("price", price_command))
     app.add_handler(CommandHandler("predict", predict_command))
-
-    # Device commands
     app.add_handler(CommandHandler("device", device_command))
     app.add_handler(CommandHandler("devices", devices_command))
-    app.add_handler(CommandHandler("categories", categories_command))
+    app.add_handler(CommandHandler("gpucompare", gpu_compare))
 
-    print("=" * 50)
-    print("🤖 Stock Predictor Bot with ELECTRONIC DEVICES is RUNNING!")
-    print("=" * 50)
-    print("\nTry these commands in Telegram:")
-    print("  📊 STOCKS:")
+    print("=" * 60)
+    print("🤖 STOCK PREDICTOR BOT")
+    print("=" * 60)
+    print("\n✅ Features:")
+    print("  📊 Stock prices & predictions")
+    print("  📱 Electronic device prices")
+    print("  🆚 GPU comparison tool")
+    print("\n📱 Try these commands in Telegram:")
+    print("  /start")
     print("  /price AAPL")
     print("  /predict AAPL")
-    print("\n  📱 DEVICES:")
-    print("  /device rtx_4090")
-    print("  /device iphone_15_pro")
+    print("  /device rtx4090")
     print("  /devices")
-    print("  /categories")
-    print("\nPress Ctrl+C to stop\n")
+    print("  /gpucompare rtx4090 rx7900xtx")
+    print("\n🚀 Bot is running... Press Ctrl+C to stop")
+    print("=" * 60)
 
     app.run_polling()
 
